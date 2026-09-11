@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Horario</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Sprite de íconos, oculto visualmente -->
+<svg class="sr-only" aria-hidden="true">
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+</svg>
+
+<div class="app">
+
+  <header class="app__header">
+    <div>
+      <div class="app__title-row">
+        <h1 class="app__title">Mi <span>Horario</span></h1>
+        <span class="app__clock" id="clock">
+          <svg class="icon"><use href="#i-clock"/></svg>
+          <span id="clockText">--:--</span>
+        </span>
+      </div>
+      <p class="app__subtitle" id="subtitle">Sin clases registradas todavía</p>
+    </div>
+    <div class="app__actions">
+      <button class="btn-ghost" id="btnExport" type="button" title="Exportar horario">
+        <svg class="icon"><use href="#i-download"/></svg> Exportar
+      </button>
+      <button class="btn-ghost" id="btnImport" type="button" title="Importar horario">
+        <svg class="icon"><use href="#i-upload"/></svg> Importar
+      </button>
+      <input type="file" id="fileImport" accept="application/json" class="sr-only" aria-hidden="true">
+      <button class="btn-primary" id="btnAdd" type="button">
+        <svg class="icon"><use href="#i-plus"/></svg> Nueva clase
+      </button>
+    </div>
+  </header>
+
+  <!-- Banner de la clase que está sucediendo ahora mismo -->
+  <div class="now-banner is-idle" id="nowBanner">
+    <span class="now-banner__dot"></span>
+    <span class="now-banner__text" id="nowBannerText">Calculando tu clase actual…</span>
+  </div>
+
+  <!-- Formulario para crear / editar una clase -->
+  <section class="form-card" id="formCard" aria-labelledby="formTitle">
+    <h2 id="formTitle"><svg class="icon"><use href="#i-book"/></svg> Nueva clase</h2>
+    <form id="classForm" novalidate>
+      <input type="hidden" id="entryId">
+      <div class="form-grid">
+        <div class="field" id="fieldDay">
+          <label for="inputDay">Día</label>
+          <select id="inputDay" required>
+            <option value="">Selecciona un día</option>
+            <option>Lunes</option>
+            <option>Martes</option>
+            <option>Miércoles</option>
+            <option>Jueves</option>
+            <option>Viernes</option>
+            <option>Sábado</option>
+          </select>
+          <p class="field__error-msg">Elige un día.</p>
+        </div>
+
+        <div class="field" id="fieldSubject">
+          <label for="inputSubject"><svg class="icon"><use href="#i-book"/></svg> Clase / materia</label>
+          <input type="text" id="inputSubject" placeholder="Ej: Estructuras de datos" required>
+          <p class="field__error-msg">Escribe el nombre de la clase.</p>
+        </div>
+
+        <div class="field" id="fieldRoom">
+          <label for="inputRoom"><svg class="icon"><use href="#i-pin"/></svg> Salón</label>
+          <input type="text" id="inputRoom" placeholder="Ej: Bloque 12 - 305" required>
+          <p class="field__error-msg">Indica el salón.</p>
+        </div>
+
+        <div class="field" id="fieldStart">
+          <label for="inputStartHour"><svg class="icon"><use href="#i-clock"/></svg> Hora inicio (24h)</label>
+          <div class="time-picker">
+            <select id="inputStartHour" aria-label="Hora de inicio"></select>
+            <span class="time-picker__sep">:</span>
+            <select id="inputStartMin" aria-label="Minutos de inicio"></select>
+          </div>
+        </div>
+
+        <div class="field" id="fieldEnd">
+          <label for="inputEndHour"><svg class="icon"><use href="#i-clock"/></svg> Hora fin (24h)</label>
+          <div class="time-picker">
+            <select id="inputEndHour" aria-label="Hora de fin"></select>
+            <span class="time-picker__sep">:</span>
+            <select id="inputEndMin" aria-label="Minutos de fin"></select>
+          </div>
+          <p class="field__error-msg">La hora de fin debe ser posterior a la de inicio.</p>
+        </div>
+      </div>
+
+      <div class="form-card__footer">
+        <button type="button" class="btn-ghost" id="btnCancel">Cancelar</button>
+        <button type="submit" class="btn-primary" id="btnSave"><svg class="icon"><use href="#i-check"/></svg> Guardar clase</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Buscador -->
+  <div class="search-bar">
+    <svg class="icon"><use href="#i-search"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar por materia o salón…">
+  </div>
+
+  <!-- Tablero: todos los días visibles siempre, empezando por hoy -->
+  <main class="board" id="board"></main>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
