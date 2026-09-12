@@ -413,9 +413,11 @@ select:focus-visible {
   min-height: 110px;
   animation: fadeInUp .45s var(--ease) both;
   animation-delay: calc(var(--i, 0) * 60ms);
+  grid-column: span 2;
 }
 
 .day-column.is-today {
+  grid-column: 1 / -1;
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent-dim), 0 10px 30px -12px var(--accent-glow);
 }

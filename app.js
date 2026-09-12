@@ -23,11 +23,13 @@ class ScheduleStore {
   constructor() {
     this.entries = [];
     this.nextId = 1;
+    this.loadFromLocalStorage();
   }
 
   add(data) {
     const entry = new ScheduleEntry({ id: this.nextId++, ...data });
     this.entries.push(entry);
+    this.saveToLocalStorage();
     return entry;
   }
 
@@ -35,11 +37,13 @@ class ScheduleStore {
     const entry = this.getById(id);
     if (!entry) return null;
     Object.assign(entry, data);
+    this.saveToLocalStorage();
     return entry;
   }
 
   remove(id) {
     this.entries = this.entries.filter((entry) => entry.id !== id);
+    this.saveToLocalStorage();
   }
 
   getById(id) {
@@ -73,6 +77,29 @@ class ScheduleStore {
 
     this.entries = raw.map((item) => new ScheduleEntry(item));
     this.nextId = this.entries.reduce((max, entry) => Math.max(max, entry.id), 0) + 1;
+    this.saveToLocalStorage();
+  }
+
+  saveToLocalStorage() {
+    localStorage.setItem('scheduleData', JSON.stringify(this.entries));
+    localStorage.setItem('scheduleNextId', String(this.nextId));
+  }
+
+  loadFromLocalStorage() {
+    try {
+      const saved = localStorage.getItem('scheduleData');
+      const savedNextId = localStorage.getItem('scheduleNextId');
+      if (saved) {
+        this.entries = JSON.parse(saved).map((item) => new ScheduleEntry(item));
+      }
+      if (savedNextId) {
+        this.nextId = Number(savedNextId);
+      }
+    } catch (error) {
+      console.error('Error al cargar datos de localStorage:', error);
+      this.entries = [];
+      this.nextId = 1;
+    }
   }
 }
 
@@ -83,7 +110,7 @@ class ScheduleStore {
  * buscar, exportar e importar.
  */
 class ScheduleApp {
-  static DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  static DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   static MINUTE_STEPS = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
 
   constructor(store) {
@@ -105,8 +132,7 @@ class ScheduleApp {
 
   getTodayIndex() {
     const jsDay = new Date().getDay(); // 0 = domingo ... 6 = sábado
-    const map = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 0 };
-    return map[jsDay];
+    return jsDay; // Mapeo directo: 0=Domingo, 1=Lunes, 2=Martes, etc.
   }
 
   getOrderedDays() {
